@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "sourceMap": true,
+    "module": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "target": "es5",
+    "allowJs": true
+  },
+  "include": ["src/**/*.ts", "src/axios/index.js"]
+}
