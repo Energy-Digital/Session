@@ -1,43 +1,51 @@
 import {Request} from './Request'
+import {ISessionData, Access_ResponseType} from './type'
 
-export interface ISessionData {
-    id: number
-    token: string
-    expiredAt: number
+declare const window: any
+
+
+const SessionConfig = {
+    ACCESS_TOKEN_URL:  window.SESSIONINITVARIABLE.ACCESS_TOKEN_URL,
+    LOGINURL: window.SESSIONINITVARIABLE.LOGINURL,
+    LOGOUTURL: window.SESSIONINITVARIABLE.LOGOUTURL,
+    EXPIREHOUR: 1,
 }
 
-const baseUrl = 'https://www.easy-mock.com'
-
 class Session {
-    public sessionData: ISessionData | null = null 
+    private sessionData: ISessionData | null = null 
 
     public getToken() {
         return new Promise((resolve, reject) => {
-            if (this.sessionData && !this.isTokenExpired) {
+            if (this.sessionData && !this.isTokenExpired()) {
                 resolve(this.sessionData)
             } else {
-                try {
-                    this.fetchToken().then((res) => {
-                        console.log(res)
-                        // const newSessionData = {
-                        //     token: token,
-                        //     expiredAt: Date.now() + 1 * 60 * 60 * 1e3,
-                        //     id: id
-                        // }
-                        // this.sessionData = newSessionData
-                        resolve(res)
-                    })
-                } catch (err) {
-                    console.log(err)
-                }
-            }
+                this.fetchToken().then((res) => {
+                    if (res.code === 0) {
+                        const getData= res.data
+                        const newSessionData = {
+                            ...getData,
+                            expiredAt: Date.now() + SessionConfig.EXPIREHOUR * 60 * 60 * 1e3, // 一个小时token
+                        }
+                        this.sessionData = newSessionData
+                        resolve(this.sessionData)
+                    } else {
+                        window.location.assign(SessionConfig.LOGINURL)
+                    }
+                })
+            } 
         })
     }
 
-    private async fetchToken() {
-        const requreUrl = baseUrl + '/mock/591d317c9aba4141cf26a50b/example_1495085436160/getaudiolist'
-        const result = await Request.$get(`${requreUrl}`, {})  
-        return result
+    private fetchToken(): Promise<Access_ResponseType>{
+        return Request.$get(SessionConfig.ACCESS_TOKEN_URL, {})  
+    }
+
+    public login(params: {username: string, psw: string}) {
+        return Request.$get(SessionConfig.LOGINURL, {params})
+    }
+
+    public logout() {
+        return Request.$get(SessionConfig.LOGOUTURL, {})
     }
 
     private isTokenExpired(): boolean {
