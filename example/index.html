@@ -18,17 +18,25 @@
 
     <button id="fuckLogin">login</button>
     <script>
-        Session.getToken().then((res) => {
-            console.log(res)
-        })
       document.querySelector('#fuckLogin').addEventListener('click', () => {
-        Session.getToken().then((res) => {
-            console.log(res)
+            Session.getToken().then((res) => {
+                console.log(res)
+            })
         })
+
+        class Request {
+            static async get() {
+                const Access = await Session.getToken()
+                console.log(Access)
+            }
+        }
+
+
+        Request.get()
+
         // window.Session.login({username: 'dubinbin', psw: '6653145'}).then((res) => {
         //     console.log(res)
         // })
-      })
     </script>
 </body>
 </html>
